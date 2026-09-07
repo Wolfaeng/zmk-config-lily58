@@ -67,7 +67,7 @@ cs-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>;
         numbers_layer {
             bindings = <
                 &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
-                &trans &trans &trans &trans &trans &trans &trans &trans &kp 7 &kp 8 &kp 9 &trans
+                &trans &trans &trans &trans &trans &trans &trans &trans &kp DE_N7 &kp DE_N8 &kp DE_N9 &trans
                 &trans &trans &trans &trans &trans &trans &trans &trans &kp DE_N4 &kp DE_N5 &kp DE_N6 &trans
                 &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &kp DE_N1 &kp DE_N2 &kp DE_N3 &kp DE_N0
                 &trans &trans &trans &trans &trans &trans &trans &trans
