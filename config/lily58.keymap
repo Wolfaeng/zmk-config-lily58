@@ -1,22 +1,22 @@
 /*
- * Bone-Layout fuer Lily58 (ZMK)
+ * Bone-Layout fuer Lily58 (ZMK) - QWERTZ-Version mit zmk-locales
  * ------------------------------------------------------------------
- * WICHTIG: Diese Keymap geht davon aus, dass dein PC/OS auf
- *          DEUTSCH (QWERTZ) eingestellt ist!
+ * Diese Keymap nutzt das Modul "zmk-locales" (joelspadin) und dessen
+ * German-Header. Dadurch schreibst du direkt das Zeichen, das erscheinen
+ * soll (DE_...), und musst nicht mehr im Kopf auf US-QWERTY umrechnen.
  *
- * ZMK sendet US-HID-Keycodes. Der PC interpretiert sie als QWERTZ.
- * Deshalb stehen in den Bindings teils "komische" Keycodes:
- *   z.B. &kp Y  ->  ergibt auf QWERTZ ein "z"
- *        &kp Z  ->  ergibt auf QWERTZ ein "y"
- *        &kp LBKT -> "ue"   &kp SQT -> "ae"   &kp SEMI -> "oe"
- *        &kp MINUS -> "ss"
+ * Voraussetzung:
+ *   1) PC/OS ist auf DEUTSCH (QWERTZ) eingestellt.
+ *   2) Modul in config/west.yml eingetragen (siehe Chat / README).
+ *
+ * Hinweis Totentasten (Dead Keys) auf QWERTZ:
+ *   DE_CARET (^), DE_GRAVE (`) und DE_ACUTE (´) erscheinen erst,
+ *   wenn danach Leertaste oder ein Buchstabe folgt. Das ist normal.
  *
  * Layer:
- *   0 = Bone Grundebene (Ebene 1) + Shift gibt Ebene 2 (Grossbuchstaben)
- *   1 = SYM  (praktische Bone Ebene 3: Programmier-/Sonderzeichen)
- *   2 = NAV  (Pfeile, Navigation, Ziffern, F-Tasten, Bluetooth)
- *
- * Aktivierung ueber Daumentasten (siehe unterste Reihe).
+ *   0 = Bone Grundebene
+ *   1 = SYM  (Programmier-/Sonderzeichen)
+ *   2 = NAV  (Pfeile, Navigation, Ziffern-Block-Ersatz, F-Tasten, BT)
  * ------------------------------------------------------------------
  */
 
@@ -24,86 +24,57 @@
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/ext_power.h>
-
-/* ------------------------------------------------------------------
- * AltGr-Zeichen fuer QWERTZ als Makros
- * (Zeichen, die man auf DE nur mit AltGr = RALT erreicht)
- * ------------------------------------------------------------------ */
-/ {
-    macros {
-        m_at:    m_at    { compatible = "zmk,behavior-macro"; #binding-cells = <0>; bindings = <&kp RA(Q)>;    label = "AT"; };      // @
-        m_euro:  m_euro  { compatible = "zmk,behavior-macro"; #binding-cells = <0>; bindings = <&kp RA(E)>;    label = "EURO"; };    // EUR
-        m_lbrc:  m_lbrc  { compatible = "zmk,behavior-macro"; #binding-cells = <0>; bindings = <&kp RA(N7)>;   label = "LBRC"; };    // {
-        m_lbkt:  m_lbkt  { compatible = "zmk,behavior-macro"; #binding-cells = <0>; bindings = <&kp RA(N8)>;   label = "LBKT"; };    // [
-        m_rbkt:  m_rbkt  { compatible = "zmk,behavior-macro"; #binding-cells = <0>; bindings = <&kp RA(N9)>;   label = "RBKT"; };    // ]
-        m_rbrc:  m_rbrc  { compatible = "zmk,behavior-macro"; #binding-cells = <0>; bindings = <&kp RA(N0)>;   label = "RBRC"; };    // }
-        m_bslh:  m_bslh  { compatible = "zmk,behavior-macro"; #binding-cells = <0>; bindings = <&kp RA(MINUS)>; label = "BSLH"; };   // '\'
-        m_tilde: m_tilde { compatible = "zmk,behavior-macro"; #binding-cells = <0>; bindings = <&kp RA(RBKT)>; label = "TILDE"; };   // ~
-        m_pipe:  m_pipe  { compatible = "zmk,behavior-macro"; #binding-cells = <0>; bindings = <&kp RA(NON_US_BSLH)>; label = "PIPE"; }; // |
-    };
-};
+#include <locale/keys_de.h>
 
 / {
     keymap {
         compatible = "zmk,keymap";
 
         /* =============================================================
-         * Layer 0 - Bone Grundebene (Ebene 1)
+         * Layer 0 - Bone Grundebene
          *
-         * Bone-Buchstabenanordnung (das was auf dem Schirm erscheint):
-         *   j d u a x        p h l m w  ss
-         *   c t i e o        b n r s g  q
-         *   f v ue ae oe     y z ,  .  k
+         *   j d u a x        p h l m w
+         *   c t i e o        b n r s g
+         *   f v ue ae oe     z y , . k
          *
-         * Shift liefert automatisch Ebene 2 (Grossbuchstaben + auf DE
-         * die ueblichen Shift-Zeichen der Zahlenreihe).
+         * (Shift liefert automatisch die Grossbuchstaben-Ebene.)
          * ============================================================= */
         default_layer {
-            // ----------------------------------------------------------------------------------------------------
-            // |  ESC  |  1  |  2  |  3  |  4  |  5  |                 |  6  |  7  |  8  |  9  |  0  |  ss   |
-            // |  TAB  |  j  |  d  |  u  |  a  |  x  |                 |  p  |  h  |  l  |  m  |  w  |  q    |
-            // | CTRL  |  c  |  t  |  i  |  e  |  o  |                 |  b  |  n  |  r  |  s  |  g  |  '    |
-            // | SHIFT |  f  |  v  | ue  | ae  | oe  | [ |     | ] |   |  z  |  y  |  ,  |  .  |  k  | SHIFT |
+            // -----------------------------------------------------------------------------------------------------------
+            // |  ESC  |  1  |  2  |  3  |  4  |  5  |                     |  6  |  7  |  8  |  9  |  0  |  ss   |
+            // |  TAB  |  j  |  d  |  u  |  a  |  x  |                     |  p  |  h  |  l  |  m  |  w  |  q    |
+            // | CTRL  |  c  |  t  |  i  |  e  |  o  |                     |  b  |  n  |  r  |  s  |  g  |  '    |
+            // | SHIFT |  f  |  v  | ue  | ae  | oe  | [ |         | ] |   |  z  |  y  |  ,  |  .  |  k  | SHIFT |
             //                     | ALT | GUI | SYM | SPACE | | ENT | NAV | BSPC| GUI |
             bindings = <
-                &kp ESC   &kp N1  &kp N2  &kp N3    &kp N4    &kp N5                       &kp N6  &kp N7   &kp N8    &kp N9  &kp N0  &kp MINUS
-                &kp TAB   &kp J   &kp D   &kp U     &kp A     &kp X                        &kp P   &kp H    &kp L     &kp M   &kp W   &kp Q
-                &kp LCTRL &kp C   &kp T   &kp I     &kp E     &kp O                        &kp B   &kp N    &kp R     &kp S   &kp G   &kp SQT
-                &kp LSHFT &kp F   &kp V   &kp LBKT  &kp SQT   &kp SEMI &kp NUBS   &kp RA(N8) &kp Y  &kp Z    &kp COMMA &kp DOT &kp K   &kp RSHFT
-                                          &kp LALT  &kp LGUI  &mo 1    &kp SPACE  &kp RET   &mo 2   &kp BSPC &kp RGUI
+                &kp ESC   &kp DE_N1 &kp DE_N2 &kp DE_N3       &kp DE_N4       &kp DE_N5                             &kp DE_N6 &kp DE_N7 &kp DE_N8    &kp DE_N9  &kp DE_N0 &kp DE_SHARP_S
+                &kp TAB   &kp DE_J  &kp DE_D  &kp DE_U        &kp DE_A        &kp DE_X                              &kp DE_P  &kp DE_H  &kp DE_L     &kp DE_M   &kp DE_W  &kp DE_Q
+                &kp LCTRL &kp DE_C  &kp DE_T  &kp DE_I        &kp DE_E        &kp DE_O                              &kp DE_B  &kp DE_N  &kp DE_R     &kp DE_S   &kp DE_G  &kp DE_APOS
+                &kp LSHFT &kp DE_F  &kp DE_V  &kp DE_U_UMLAUT &kp DE_A_UMLAUT &kp DE_O_UMLAUT &kp DE_LBKT &kp DE_RBKT  &kp DE_Z  &kp DE_Y  &kp DE_COMMA &kp DE_DOT &kp DE_K  &kp RSHFT
+                                              &kp LALT        &kp LGUI        &mo 1           &kp SPACE   &kp RET   &mo 2     &kp BSPC  &kp RGUI
             >;
         };
 
         /* =============================================================
-         * Layer 1 - SYM (praktische Bone Ebene 3)
+         * Layer 1 - SYM (Programmier- und Sonderzeichen)
          *
-         * Programmier- und Sonderzeichen. Anordnung an Neo/Bone Ebene 3
-         * angelehnt, aber nur mit auf QWERTZ erzeugbaren Zeichen.
-         *
-         *   ...  _  [  ]  ^        !  <  >  =  &  '\'
+         *   ...  _  [  ]  ^        !  <  >  =  &  \
          *    \   /  {  }  *        ?  (  )  +  :  @
-         *    #   $  |  ~  `        +  -  ;  ,  .  -
+         *    #   $  |  ~  `        %  EUR ;  ,  .
          * ============================================================= */
         sym_layer {
-            // Zeichen als Kommentar = was erscheint (QWERTZ)
-            // Reihe1: (leer) _  [  ]  ^
-            // Reihe2:  \  /  {  }  *
-            // Reihe3:  #  $  |  ~  =
             bindings = <
-                &trans     &trans      &trans     &trans     &trans     &trans                        &trans      &trans      &trans     &trans     &trans     &trans
-                &trans     &kp UNDER   &m_lbkt    &m_rbkt    &kp CARET  &trans                        &kp EXCL    &kp LT      &kp GT     &kp EQUAL  &kp AMPS   &m_bslh
-                &m_bslh    &kp SLASH   &m_lbrc    &m_rbrc    &kp ASTRK  &trans                        &kp QMARK   &kp LPAR    &kp RPAR   &kp PLUS   &kp COLON  &m_at
-                &kp HASH   &kp DLLR    &m_pipe    &m_tilde   &kp GRAVE  &trans     &trans   &trans    &kp PRCNT   &m_euro     &kp SEMI   &kp COMMA  &kp DOT    &trans
-                                                  &trans     &trans     &trans     &trans   &trans    &trans      &trans      &trans
+                &trans      &trans        &trans      &trans      &trans       &trans                          &trans       &trans      &trans      &trans      &trans      &trans
+                &trans      &kp DE_UNDER  &kp DE_LBKT &kp DE_RBKT &kp DE_CARET &trans                          &kp DE_EXCL  &kp DE_LT   &kp DE_GT   &kp DE_EQUAL &kp DE_AMPS &kp DE_BSLH
+                &kp DE_BSLH &kp DE_SLASH  &kp DE_LBRC &kp DE_RBRC &kp DE_ASTRK &trans                          &kp DE_QMARK &kp DE_LPAR &kp DE_RPAR &kp DE_PLUS  &kp DE_COLON &kp DE_AT
+                &kp DE_HASH &kp DE_DLLR   &kp DE_PIPE &kp DE_TILDE &kp DE_GRAVE &trans     &trans     &trans    &kp DE_PRCNT &kp DE_EURO &kp DE_SEMI &kp DE_COMMA &kp DE_DOT  &trans
+                                                      &trans      &trans       &trans     &trans     &trans    &trans       &trans      &trans
             >;
         };
 
         /* =============================================================
-         * Layer 2 - NAV (Pfeile, Navigation, Ziffern, F-Tasten, BT)
-         *
-         * Pfeile liegen auf der rechten Hand (Bone-Homerow-naeah):
-         *   LEFT DOWN UP RIGHT  auf  n r s g Positionen
-         * Links: F-Tasten + Bluetooth-Verwaltung.
+         * Layer 2 - NAV (Pfeile, Navigation, F-Tasten, Bluetooth)
+         * (unveraendert - alles layout-unabhaengige Funktionstasten)
          * ============================================================= */
         nav_layer {
             // |BTCLR| BT1 | BT2 | BT3 | BT4 | BT5 |         |     | HOME| END |PGUP |PGDN |     |
