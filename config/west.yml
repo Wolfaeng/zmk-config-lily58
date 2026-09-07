@@ -13,5 +13,8 @@ manifest:
     - name: zmk-locales
       remote: joelspadin
       revision: main
+    - name: nv-gem
+      url: https://github.com/MechboardsLTD/zmk-module
+      revision: nv_gem
   self:
     path: config
