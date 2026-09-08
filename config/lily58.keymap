@@ -6,17 +6,37 @@
  * soll (DE_...), und musst nicht mehr im Kopf auf US-QWERTY umrechnen.
  *
  * Voraussetzung:
- *   1) PC/OS ist auf DEUTSCH (QWERTZ) eingestellt.
+ *   1) Der Host ist auf DEUTSCH (QWERTZ) eingestellt -- unter Linux/Windows
+ *      ODER unter macOS (Eingabequelle "Deutsch", NICHT US!).
  *   2) Modul in config/west.yml eingetragen (siehe Chat / README).
+ *
+ * OS-Toggle (Mac <-> Linux/Windows):
+ *   Auf dem Mac liegen die AltGr-Zeichen ( @ [ ] { } \ | ~ ) auf
+ *   Option-Kombinationen statt auf AltGr. Der "Mac-Modus" wird ueber
+ *   &tog 5 umgeschaltet (Taste liegt auf dem NAV-Layer, neben den BT-Tasten).
+ *   - Mac-Modus AUS  -> AltGr-Zeichen wie gehabt (Linux/Windows-Deutsch)
+ *   - Mac-Modus AN   -> beim Halten von SYM senden die betroffenen Tasten
+ *                       die Option-Varianten (macOS-Deutsch)
+ *   Der Zustand bleibt ueber Neustarts NICHT automatisch erhalten; einmal
+ *   druecken nach dem Wechsel genuegt.
+ *
+ *   Hinweis: Das [ auf der GRUNDEBENE (DE_LBKT) wird im Mac-Modus vorerst
+ *   NICHT korrigiert (bewusst so gelassen). Betroffen ist nur diese eine
+ *   Taste; das [ auf der SYM-Ebene funktioniert im Mac-Modus korrekt.
  *
  * Hinweis Totentasten (Dead Keys) auf QWERTZ:
  *   DE_CARET (^), DE_GRAVE (`) und DE_ACUTE (´) erscheinen erst,
  *   wenn danach Leertaste oder ein Buchstabe folgt. Das ist normal.
+ *   Achtung: Auf dem Mac ist auch ~ eine Totentaste (Option+N). Siehe MAC_TILDE.
  *
  * Layer:
  *   0 = Bone Grundebene
- *   1 = SYM  (Programmier-/Sonderzeichen)
- *   2 = NAV  (Pfeile, Navigation, Ziffern-Block-Ersatz, F-Tasten, BT)
+ *   1 = SYM      (Programmier-/Sonderzeichen, Linux/Windows)
+ *   2 = NAV      (Pfeile, Navigation, BT, OS-Toggle)
+ *   3 = NUMBERS  (Ziffernblock)
+ *   4 = SYM_MAC  (Mac-Variante von SYM; wird automatisch aktiv, wenn
+ *                 SYM + OS_FLAG zusammen aktiv sind -> Conditional Layer)
+ *   5 = OS_FLAG  (leerer Marker-Layer; schaltet den Mac-Modus, via &tog 5)
  * ------------------------------------------------------------------
  */
 
@@ -26,12 +46,41 @@
 #include <dt-bindings/zmk/ext_power.h>
 #include <locale/keys_de.h>
 
+/*
+ * macOS-Deutsch Aequivalente der AltGr-Zeichen.
+ * LA(...) = linke Option-Taste (= Left Alt). Buchstaben-/Zahlen-HID-Codes
+ * (L, N5, ...) beziehen sich auf die physische Tastenposition, die unter
+ * dem Mac-Deutsch-Layout die gewuenschte Option-Kombination ausloest.
+ */
+#define MAC_AT    LA(L)          /* @  = Option+L        */
+#define MAC_LBKT  LA(N5)         /* [  = Option+5        */
+#define MAC_RBKT  LA(N6)         /* ]  = Option+6        */
+#define MAC_LBRC  LA(N8)         /* {  = Option+8        */
+#define MAC_RBRC  LA(N9)         /* }  = Option+9        */
+#define MAC_PIPE  LA(N7)         /* |  = Option+7        */
+#define MAC_BSLH  LA(LS(N7))     /* \  = Option+Shift+7  */
+#define MAC_TILDE LA(N)          /* ~  = Option+N (Totentaste, siehe unten) */
+
 &nice_view_spi {
 cs-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>;
 };
 
 / {
-    keymap {
+    /*
+     * Wenn SYM (1) UND OS_FLAG (5) gleichzeitig aktiv sind, wird
+     * automatisch SYM_MAC (4) obendrauf gelegt. So gelten die Mac-Symbole
+     * nur beim Halten von SYM und kollidieren nicht mit den Buchstaben
+     * der Grundebene.
+     */
+    conditional_layers {
+        compatible = "zmk,conditional-layers";
+        mac_sym {
+            if-layers = <1 5>;
+            then-layer = <4>;
+        };
+    };
+
+     keymap {
         compatible = "zmk,keymap";
 
         default_layer {
@@ -56,9 +105,9 @@ cs-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>;
 
         nav_layer {
             bindings = <
-                &bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &trans &kp HOME &kp END &kp PG_UP &kp PG_DN &trans
-                &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &kp INS &trans &kp UP &none &trans &kp DEL
-                &kp F7 &kp F8 &kp F9 &kp F10 &kp F11 &kp F12 &trans &kp LEFT &kp DOWN &kp RIGHT &trans &trans
+                &bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &tog 5 &none &none &none &none &trans
+                &none &none &none &none &none &none &none &trans &kp UP &none &trans &none
+                &none &none &none &none &none &none &trans &kp LEFT &kp DOWN &kp RIGHT &trans &trans
                 &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
                 &trans &trans &trans &trans &trans &trans &trans &trans
             >;
@@ -66,10 +115,40 @@ cs-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>;
 
         numbers_layer {
             bindings = <
-                &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
                 &trans &trans &trans &trans &trans &trans &trans &trans &kp DE_N7 &kp DE_N8 &kp DE_N9 &trans
                 &trans &trans &trans &trans &trans &trans &trans &trans &kp DE_N4 &kp DE_N5 &kp DE_N6 &trans
-                &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &kp DE_N1 &kp DE_N2 &kp DE_N3 &kp DE_N0
+                &trans &trans &trans &trans &trans &trans &trans &trans &kp DE_N1 &kp DE_N2 &kp DE_N3 &trans
+                &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &kp DE_N0 &kp DE_COMMA &kp DE_DOT &trans
+                &trans &trans &trans &trans &trans &trans &trans &trans
+            >;
+        };
+
+        /*
+         * SYM_MAC (Layer 4): Kopie von SYM, aber die 8 AltGr-Zeichen sind
+         * durch ihre macOS-Option-Varianten ersetzt. Wird nur automatisch
+         * aktiv (Conditional Layer), wenn SYM + OS_FLAG gleichzeitig laufen.
+         */
+        sym_mac_layer {
+            bindings = <
+                &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
+                &trans &kp DE_UNDER &kp MAC_LBKT &kp MAC_RBKT &kp DE_CARET &kp DE_EXCL &kp DE_EXCL &kp DE_LT &kp DE_GT &kp DE_EQUAL &kp DE_AMPS &none
+                &none &kp MAC_BSLH &kp DE_SLASH &kp MAC_LBRC &kp MAC_RBRC &kp DE_ASTRK &kp DE_QMARK &kp DE_LPAR &kp DE_RPAR &kp DE_MINUS &kp DE_COLON &kp MAC_AT
+                &none &kp DE_HASH &kp DE_DLLR &kp MAC_PIPE &kp MAC_TILDE &kp DE_GRAVE &trans &trans &kp DE_PLUS &kp DE_PRCNT &kp DE_DQT &kp DE_APOS &kp DE_SEMI &trans
+                &trans &trans &trans &trans &trans &trans &trans &trans
+            >;
+        };
+
+        /*
+         * OS_FLAG (Layer 5): leerer Marker-Layer. Traegt keine Taste, dient
+         * nur als persistenter Schalter fuer den Mac-Modus (&tog 5). Erst die
+         * Kombination mit SYM aktiviert ueber den Conditional Layer SYM_MAC.
+         */
+        os_flag_layer {
+            bindings = <
+                &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
+                &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
+                &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
+                &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
                 &trans &trans &trans &trans &trans &trans &trans &trans
             >;
         };
